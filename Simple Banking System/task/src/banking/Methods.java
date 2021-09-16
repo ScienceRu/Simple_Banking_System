@@ -1,16 +1,16 @@
 package banking;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
 
 public class Methods {
-    private StringBuilder fullCardNumber = new StringBuilder("400000");
-    private StringBuilder pinCode = new StringBuilder("");
+    private long fullCardNumber = 400000000000000L;
+    private StringBuilder sbCardNumber = new StringBuilder("");
+    private StringBuilder sbPinCode = new StringBuilder("");
     private int balance = 0;
-    private StringBuilder[][] userData = new StringBuilder[2][3];
+    private ArrayList <StringBuilder> userData = new ArrayList<>();
     private int menuItem;
-    private static int countCard = 0;
-    private static int countPin = 0;
     private static boolean isCorrect = false;
 
     Scanner sc = new Scanner(System.in);
@@ -24,45 +24,86 @@ public class Methods {
     }
 
     public StringBuilder getCardNumber() {
-        StringBuilder copyCardNumber = new StringBuilder("");
-        copyCardNumber.append(fullCardNumber);
-        return copyCardNumber;
+        StringBuilder copySbCardNumber = new StringBuilder("");
+        copySbCardNumber.append(sbCardNumber);
+        return copySbCardNumber;
+    }
+
+    ArrayList<Integer> useLuhnAlgorithm() {
+        Random random = new Random();
+        long accountIdentifier = random.nextInt(9999999) + 1;
+        fullCardNumber = fullCardNumber + accountIdentifier;
+        String cardNumberInString = String.valueOf(fullCardNumber);
+        ArrayList<Double> arrayList = new ArrayList<>();
+        for (int i = 0, j = 1; j <= cardNumberInString.length(); i++, j++) {
+            arrayList.add(Double.parseDouble(cardNumberInString.substring(i, j)));
+
+        }
+
+        ArrayList<Double> copyArrayList = new ArrayList<>(arrayList);
+
+        for (int i = 0; i < copyArrayList.size(); i++) {
+            if (i % 2 == 0) {
+                copyArrayList.set(i, copyArrayList.get(i) * 2);
+                if (copyArrayList.get(i) > 9) {
+                    copyArrayList.set(i, copyArrayList.get(i) - 9);
+                }
+            }
+        }
+        double sum = 0;
+        for (double i : copyArrayList) {
+            sum += i;
+        }
+
+        if (sum % 10 != 0) {
+            double difference = 10 - (sum % 10);
+
+            arrayList.add(difference);
+        } else {
+            arrayList.add(0.0);
+        }
+        ArrayList<Integer> integerArrayList = new ArrayList<>();
+
+        for (double d : arrayList) {
+            integerArrayList.add((int) d);
+        }
+
+        return integerArrayList;
     }
 
     public void setCardNumber() {
-        Random random = new Random();
-        int accountIdentifier = random.nextInt(99999999) + 1;
-        fullCardNumber.append(accountIdentifier);
 
-        while (fullCardNumber.length() < 16) {
-            fullCardNumber.append("0", 0, 1);
+        ArrayList<Integer> copyArrayListCardNumber = new ArrayList<>(useLuhnAlgorithm());
+        for (int i : copyArrayListCardNumber) {
+            sbCardNumber.append(i);
         }
-        userData[0][countCard] = fullCardNumber;
+
+        userData.add(sbCardNumber);
         System.out.println("Your card has been created");
         System.out.println("Your card number:");
         System.out.println(getCardNumber());
-        fullCardNumber = new StringBuilder("400000");
-        countCard++;
+        sbCardNumber = new StringBuilder("");
+        fullCardNumber = 400000000000000L;
     }
 
     public StringBuilder getPinCode() {
-        StringBuilder copyPinCode = new StringBuilder("");
-        copyPinCode.append(pinCode);
-        return copyPinCode;
+        StringBuilder copySbPinCode = new StringBuilder("");
+        copySbPinCode.append(sbPinCode);
+        return copySbPinCode;
     }
 
     public void setPinCode() {
         Random random = new Random();
-        int accountIdentifier = random.nextInt(9999) + 1;
-        pinCode.append(accountIdentifier);
-        while (pinCode.length() < 4) {
-            pinCode.append("0", 0, 1);
+        long accountIdentifier = random.nextInt(9999) + 1;
+        //pinCode = accountIdentifier;
+        sbPinCode.append(accountIdentifier);
+        while (sbPinCode.length() < 4) {
+            sbPinCode.append("0", 0, 1);
         }
-        userData[1][countPin] = pinCode;
+        userData.add(sbPinCode);
         System.out.println("Your card PIN:");
         System.out.println(getPinCode());
-        pinCode = new StringBuilder("");
-        countPin++;
+        sbPinCode = new StringBuilder("");
     }
 
     public int getMenuItem() {
@@ -100,7 +141,7 @@ public class Methods {
 //                System.out.print(userData[i][j] + " ");
 //            }
 //        }
-//      System.out.println(userData.toString());
+
         choosingMenuItem();
     }
 
@@ -119,21 +160,19 @@ public class Methods {
         }
     }
 
-//checking if card number and pin code are in array userData
+    //checking if card number and pin code are in array userData
     private boolean isValidCardNumberAndPinCode(String s1, String s2) {
-
-        for (int i = 0; i < userData.length; ) {
-            for (int j = 0; j < userData[i].length; j++) {
-                if (s1.equals(userData[i][j].toString())) {
-                    if (s2.equals(userData[i + 1][j].toString())) {
+            for (int i=0, j=1; j < userData.size(); ) {
+                if (s1.equals(userData.get(i).toString())) {
+                    if (s2.equals(userData.get(j).toString())) {
                         isCorrect = true;
                         break;
+                    } else {
+                        break;
                     }
-                    break;
+                }else{i+=2;j+=2;
+
                 }
-                break;
-            }
-            break;
         }
         return isCorrect;
     }
