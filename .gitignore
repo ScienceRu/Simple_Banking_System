@@ -1,0 +1,11 @@
+# Project exclude paths
+/.gradle/
+/Simple Banking System/task/build/
+/Simple Banking System/task/out/
+/Simple Banking System/task/out/production/classes/
+/Topics/Iterating over arrays/Boxes/out/
+/Topics/Iterating over arrays/Boxes/out/production/classes/
+/Topics/Scanning the input/Print strings in the reverse order/out/
+/Topics/Scanning the input/Print strings in the reverse order/out/production/classes/
+/Topics/Scanning the input/Printing strings in the same order/out/
+/Topics/Scanning the input/Printing strings in the same order/out/production/classes/
