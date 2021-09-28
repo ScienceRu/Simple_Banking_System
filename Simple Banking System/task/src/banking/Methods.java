@@ -1,17 +1,27 @@
 package banking;
 
+import org.sqlite.SQLiteDataSource;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
+
 
 public class Methods {
     private long fullCardNumber = 400000000000000L;
     private StringBuilder sbCardNumber = new StringBuilder("");
     private StringBuilder sbPinCode = new StringBuilder("");
     private int balance = 0;
-    private ArrayList <StringBuilder> userData = new ArrayList<>();
+    private ArrayList<StringBuilder> userData = new ArrayList<>();
     private int menuItem;
     private static boolean isCorrect = false;
+
+
+    static String url = "jdbc:sqlite:C:/sqlite/banking.db";
+    public static int accountNumber = 1;
 
     Scanner sc = new Scanner(System.in);
 
@@ -77,13 +87,31 @@ public class Methods {
         for (int i : copyArrayListCardNumber) {
             sbCardNumber.append(i);
         }
+//adding card number to sql base
 
-        userData.add(sbCardNumber);
+        //userData.add(sbCardNumber);
+
+        //creating pin code and adding it to sql base
+        Random random = new Random();
+        long accountIdentifier = random.nextInt(9999) + 1;
+        sbPinCode.append(accountIdentifier);
+        while (sbPinCode.length() < 4) {
+            sbPinCode.append("0", 0, 1);
+        }
+        //userData.add(sbPinCode);
+        insertDataToSQL(getCardNumber(), getPinCode());
         System.out.println("Your card has been created");
         System.out.println("Your card number:");
         System.out.println(getCardNumber());
+
+        System.out.println("Your card PIN:");
+        System.out.println(getPinCode());
+
         sbCardNumber = new StringBuilder("");
         fullCardNumber = 400000000000000L;
+        sbPinCode = new StringBuilder("");
+//        accountNumber++;
+
     }
 
     public StringBuilder getPinCode() {
@@ -162,17 +190,20 @@ public class Methods {
 
     //checking if card number and pin code are in array userData
     private boolean isValidCardNumberAndPinCode(String s1, String s2) {
-            for (int i=0, j=1; j < userData.size(); ) {
-                if (s1.equals(userData.get(i).toString())) {
-                    if (s2.equals(userData.get(j).toString())) {
-                        isCorrect = true;
-                        break;
-                    } else {
-                        break;
-                    }
-                }else{i+=2;j+=2;
 
+        for (int i = 0, j = 1; j < userData.size(); ) {
+            if (s1.equals(userData.get(i).toString())) {
+                if (s2.equals(userData.get(j).toString())) {
+                    isCorrect = true;
+                    break;
+                } else {
+                    break;
                 }
+            } else {
+                i += 2;
+                j += 2;
+
+            }
         }
         return isCorrect;
     }
@@ -196,5 +227,39 @@ public class Methods {
         }
     }
 
+    public static void insertDataToSQL(StringBuilder s1, StringBuilder s2) {
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl(url);
+        try (Connection connection = dataSource.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                int i = statement.executeUpdate("INSERT INTO accounts (id, number) VALUES (" + accountNumber + ", '" + s1 + "');");
+                int j = statement.executeUpdate("UPDATE accounts SET pin = '" + s2 + "' WHERE id = " + accountNumber + ";");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createNewTable() {
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl(url);
+        try (Connection connection = dataSource.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS accounts (" +
+                        "id INTEGER," +
+                        "number TEXT," +
+                        "pin TEXT," +
+                        "balance INTEGER DEFAULT 0)");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
 }
 
