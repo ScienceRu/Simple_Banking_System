@@ -59,20 +59,34 @@ public class CreateSqlDataBase {
     }
 
     public static boolean isValidCardNumberAndPinCode(String number, String pin) {
-        String query = "SELECT * FROM accounts WHERE number = " + number + ";";
+        String query1 = "SELECT " +
+                "CASE " +
+                "WHEN EXISTS (SELECT * FROM accounts WHERE number = " + number + ") " +
+                "THEN (SELECT pin FROM accounts WHERE number = " + number + ") " +
+                "ELSE '-5464' END;";
+
+        //String query2 = "SELECT * FROM accounts WHERE number = " + number + ";";
+
+
+
         boolean isValid = false;
         try (Connection connection = getNewConnection()) {
             //int j = executeUpdate(query);
-            try (ResultSet resultSet = executeQuery(query)) {
+            try (ResultSet resultSet = executeQuery(query1)) {
                 //String pinDB = resultSet.getString("pin");
                 //getNewConnection();
                 //while(resultSet.next()){
                 //int i=resultSet.findColumn("pin");
-                String pinDB=resultSet.getString("pin");;
+                //if (resultSet.next().toString()){
+                    String pinDB = resultSet.getString(1);
+                    if (pinDB.equals(pin)) {
+                        isValid = true;
+                    }
+
+
+
                 //String pinDB = resultSet.getString("pin");
-                if (pinDB.equals(pin)) {
-                    isValid = true;
-                }
+
                 //connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
