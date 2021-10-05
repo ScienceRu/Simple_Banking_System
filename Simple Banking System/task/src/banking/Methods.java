@@ -102,6 +102,10 @@ public class Methods {
             case 0:
                 System.out.println("Buy!");
                 break;
+            default:
+                System.out.println("Try again");
+                break;
+
         }
     }
 
@@ -126,7 +130,7 @@ public class Methods {
         System.out.println("Your card number:");
         System.out.println(getCardNumber());
         System.out.println("Your card PIN:");
-        System.out.println(getPinCode());
+        System.out.println(getPinCode() + "\r\n");
 //dropping values to default for next iteration
         sbCardNumber = new StringBuilder("");
         fullCardNumber = 400000000000000L;
@@ -149,26 +153,6 @@ public class Methods {
         }
     }
 
-    //checking if card number and pin code are in array userData
-//    private boolean isValidCardNumberAndPinCode(String s1, String s2) {
-//
-//        for (int i = 0, j = 1; j < userData.size(); ) {
-//            if (s1.equals(userData.get(i).toString())) {
-//                if (s2.equals(userData.get(j).toString())) {
-//                    isCorrect = true;
-//                    break;
-//                } else {
-//                    break;
-//                }
-//            } else {
-//                i += 2;
-//                j += 2;
-//
-//            }
-//        }
-//        return isCorrect;
-//    }
-
     private void actingWithAccount() {
         System.out.println("1. Balance\r\n2. Log out\r\n0. Exit");
         int actionOfUser = sc.nextInt();
@@ -186,10 +170,8 @@ public class Methods {
                 System.out.println("Buy!");
                 break;
         }
+
     }
-
-
-
 
 }
 

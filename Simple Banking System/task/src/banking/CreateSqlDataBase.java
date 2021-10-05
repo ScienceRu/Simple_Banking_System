@@ -1,17 +1,14 @@
 package banking;
 
 import org.sqlite.SQLiteDataSource;
-
-import javax.sql.ConnectionEvent;
-import javax.sql.DataSource;
-import java.security.DrbgParameters;
 import java.sql.*;
 
 
 public class CreateSqlDataBase {
-    static String url = "jdbc:sqlite:C:/sqlite/banking.db";
+    static String url = "jdbc:sqlite:"+Main.argument;
+    //static String url = "jdbc:sqlite:C:/sqlite/banking.db";
     private static int accountNumber = 1;
-    private static Connection connection;
+     static Connection connection;
 
 
     private static Connection getNewConnection() throws SQLException {
@@ -34,19 +31,20 @@ public class CreateSqlDataBase {
 
 
     public static void insertDataToSQL(StringBuilder number, StringBuilder pin) {
-        String insertNumberQuery = "INSERT INTO accounts (id, number) VALUES (" + accountNumber + ", '" + number + "');";
-        String insertPinQuery = "UPDATE accounts SET pin = '" + pin + "' WHERE id = " + accountNumber + ";";
+        String insertNumberQuery = "INSERT INTO card (id, number) VALUES (" + accountNumber + ", '" + number + "');";
+        String insertPinQuery = "UPDATE card SET pin = '" + pin + "' WHERE id = " + accountNumber + ";";
         try (Connection connection = getNewConnection()) {
             int j = executeUpdate(insertNumberQuery);
             int i = executeUpdate(insertPinQuery);
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        accountNumber++;
 
     }
 
     public static void createNewTable() {
-        String statement = "CREATE TABLE IF NOT EXISTS accounts (" +
+        String statement = "CREATE TABLE IF NOT EXISTS card (" +
                 "id INTEGER," +
                 "number TEXT," +
                 "pin TEXT," +
@@ -61,33 +59,18 @@ public class CreateSqlDataBase {
     public static boolean isValidCardNumberAndPinCode(String number, String pin) {
         String query1 = "SELECT " +
                 "CASE " +
-                "WHEN EXISTS (SELECT * FROM accounts WHERE number = " + number + ") " +
-                "THEN (SELECT pin FROM accounts WHERE number = " + number + ") " +
-                "ELSE '-5464' END;";
-
-        //String query2 = "SELECT * FROM accounts WHERE number = " + number + ";";
-
-
+                "WHEN EXISTS (SELECT * FROM card WHERE number = " + number + ") " +
+                "THEN (SELECT pin FROM card WHERE number = " + number + ") " +
+                "ELSE '-1' END;";
 
         boolean isValid = false;
         try (Connection connection = getNewConnection()) {
-            //int j = executeUpdate(query);
             try (ResultSet resultSet = executeQuery(query1)) {
-                //String pinDB = resultSet.getString("pin");
-                //getNewConnection();
-                //while(resultSet.next()){
-                //int i=resultSet.findColumn("pin");
-                //if (resultSet.next().toString()){
                     String pinDB = resultSet.getString(1);
                     if (pinDB.equals(pin)) {
                         isValid = true;
                     }
 
-
-
-                //String pinDB = resultSet.getString("pin");
-
-                //connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
