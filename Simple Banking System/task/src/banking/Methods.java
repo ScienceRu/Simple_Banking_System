@@ -1,8 +1,6 @@
 package banking;
 
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.Random;
+import java.util.*;
 
 
 public class Methods {
@@ -13,6 +11,15 @@ public class Methods {
     private ArrayList<StringBuilder> userData = new ArrayList<>();
     private int menuItem;
     private static boolean isCorrect = false;
+
+    public static boolean isIsCorrect() {
+        return isCorrect;
+    }
+
+    public static void setIsCorrect(boolean isCorrect) {
+        Methods.isCorrect = isCorrect;
+    }
+
 
     Scanner sc = new Scanner(System.in);
 
@@ -63,6 +70,7 @@ public class Methods {
         } else {
             arrayList.add(0.0);
         }
+
         ArrayList<Integer> integerArrayList = new ArrayList<>();
 
         for (double d : arrayList) {
@@ -72,6 +80,40 @@ public class Methods {
         return integerArrayList;
     }
 
+    public static boolean checkLuhnAlgorithm(String transferCardNumber) {
+        transferCardNumber = CreateSqlDataBase.getTempUserCardNumber();
+        boolean isValid = false;
+
+        ArrayList<Double> arrayList = new ArrayList<>();
+
+        for (int i = 0, j = 1; j <= transferCardNumber.length(); i++, j++) {
+            arrayList.add(Double.parseDouble(transferCardNumber.substring(i, j)));
+        }
+        double numberIndex16 = arrayList.get(16);
+        arrayList.remove(16);
+
+
+        for (int i = 0; i < arrayList.size(); i++) {
+            if (i % 2 == 0) {
+                arrayList.set(i, arrayList.get(i) * 2);
+                if (arrayList.get(i) > 9) {
+                    arrayList.set(i, arrayList.get(i) - 9);
+                }
+            }
+        }
+        arrayList.add(16, numberIndex16);
+
+        double sum = 0;
+        for (double i : arrayList) {
+            sum += i;
+        }
+
+        if (sum % 10 != 0) {
+            isValid = true;
+        }
+        return isValid;
+
+    }
 
     public StringBuilder getPinCode() {
         StringBuilder copySbPinCode = new StringBuilder("");
@@ -109,7 +151,22 @@ public class Methods {
         }
     }
 
+    Map inputOfUser() {
+        Map<String, String> hashMap = new HashMap<>();
+        System.out.println("Enter your card number:");
+        String inputOfUser1 = sc.next();
+        System.out.println("Enter your PIN:");
+        String inputOfUser2 = sc.next();
+
+        hashMap.put(inputOfUser1, inputOfUser2);
+        return hashMap;
+    }
+
     void creatingAccount() {
+//dropping values to default for iteration
+        sbCardNumber = new StringBuilder("");
+        fullCardNumber = 400000000000000L;
+        sbPinCode = new StringBuilder("");
         //creating card number
         ArrayList<Integer> copyArrayListCardNumber = new ArrayList<>(useLuhnAlgorithm());
         for (int i : copyArrayListCardNumber) {
@@ -131,20 +188,12 @@ public class Methods {
         System.out.println(getCardNumber());
         System.out.println("Your card PIN:");
         System.out.println(getPinCode() + "\r\n");
-//dropping values to default for next iteration
-        sbCardNumber = new StringBuilder("");
-        fullCardNumber = 400000000000000L;
-        sbPinCode = new StringBuilder("");
         choosingMenuItem();
+
     }
 
     void loggingIntoAccount() {
-        System.out.println("Enter your card number:");
-        String inputOfUser1 = sc.next();
-        System.out.println("Enter your PIN:");
-        String inputOfUser2 = sc.next();
-
-        if (CreateSqlDataBase.isValidCardNumberAndPinCode(inputOfUser1, inputOfUser2)) {
+        if (CreateSqlDataBase.isValidCardNumberAndPinCode(inputOfUser())) {
             System.out.println("You have successfully logged in!");
             actingWithAccount();
         } else {
@@ -154,19 +203,36 @@ public class Methods {
     }
 
     private void actingWithAccount() {
-        System.out.println("1. Balance\r\n2. Log out\r\n0. Exit");
+        System.out.println("1. Balance\r\n2. Add income\r\n3. Do transfer\r\n4. Close account\r\n" +
+                "5. Log out\r\n0. Exit");
         int actionOfUser = sc.nextInt();
         switch (actionOfUser) {
-            case 1:
+            case 1://1. Balance
                 System.out.printf("Balance %d\r\n", getBalance());
                 actingWithAccount();
                 break;
-            case 2:
-                System.out.println("You have successfully logged out!");
-                isCorrect = false;
+            case 2://Add income
+                CreateSqlDataBase.addIncome();
+                actingWithAccount();
+                break;
+            case 3://3. Do transfer
+                CreateSqlDataBase.doTransfer();
+                actingWithAccount();
+                break;
+            case 4://4. Close account
+                CreateSqlDataBase.closeAccount();
+                System.out.println("The account has been closed!");
+                setIsCorrect(false);
                 choosingMenuItem();
                 break;
-            case 0:
+            case 5://5. Log out
+                System.out.println("You have successfully logged out!");
+                setIsCorrect(false);
+
+                CreateSqlDataBase.setTempUserCardNumber(null);
+                choosingMenuItem();
+                break;
+            case 0://0. Exit
                 System.out.println("Buy!");
                 break;
         }
@@ -174,4 +240,6 @@ public class Methods {
     }
 
 }
+
+
 
