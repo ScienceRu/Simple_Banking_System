@@ -10,9 +10,9 @@ import java.util.Scanner;
 
 
 public class CreateSqlDataBase {
-    //static String url = "jdbc:sqlite:" + Main.argument;
+    static String url = "jdbc:sqlite:" + Main.argument;
 
-    static String url = "jdbc:sqlite:C:/Users/torzh/IdeaProjects/Simple Banking System/Simple Banking System/task/banking.db";
+    //static String url = "jdbc:sqlite:C:/Users/torzh/IdeaProjects/Simple Banking System/Simple Banking System/task/banking.db";
     private static int accountNumber = 1;
     static SQLiteConnection connection;
     private static Map<String, String> userInput = new HashMap<>();
@@ -148,10 +148,10 @@ public class CreateSqlDataBase {
 
 
         } else {
-            System.out.println("Probably you made a mistake in the card number. Please try again!");
+            System.out.println("Probably you made mistake in the card number. Please try again!");
 
         }
-        scanner.close();
+
     }
 
     static boolean isExistAccount(String transferCardNumber) {
@@ -159,11 +159,11 @@ public class CreateSqlDataBase {
         String query = "SELECT " +
                 "CASE " +
                 "WHEN EXISTS (SELECT * FROM card WHERE number = '" + transferCardNumber + "') " +
-                "THEN (SELECT TRUE) " +
-                "ELSE FALSE END;";
+                "THEN (SELECT 'TRUE') " +
+                "ELSE 'FALSE' END;";
         try (Connection connection = getNewConnection()) {
             try (ResultSet resultSet = executeQuery(query)) {
-                if (resultSet.getInt(1) == 1) {
+                if (resultSet.getString(1).equals("TRUE")) {
                     isExist = true;
                 }
             } catch (SQLException e) {
@@ -180,12 +180,12 @@ public class CreateSqlDataBase {
         boolean isEnough = false;
 
         String query =
-                "SELECT balance" +
+                "SELECT balance " +
                         "FROM card " +
                         "WHERE number = '" + tempUserCardNumber + "';";
         try (Connection connection = getNewConnection()) {
             try (ResultSet resultSet = executeQuery(query)) {
-                if (resultSet.getInt(1) > sumOfTransfer) {
+                if (resultSet.getInt(1) >= sumOfTransfer) {
                     isEnough = true;
                 }
             } catch (SQLException e) {
@@ -198,9 +198,9 @@ public class CreateSqlDataBase {
     }
 
     static void transferMoney(int sumOfTransfer, String tempUserCardNumber, String transferCardNumber) {
-        String reduceBalanceOfCurrentUser = "UPDATE card SET balance -" + sumOfTransfer +
+        String reduceBalanceOfCurrentUser = "UPDATE card SET balance = balance - " + sumOfTransfer +
                 " WHERE number = '" + tempUserCardNumber + "';";
-        String increaseBalanceOfTransferCard = "UPDATE card SET balance +" + sumOfTransfer +
+        String increaseBalanceOfTransferCard = "UPDATE card SET balance = balance + " + sumOfTransfer +
                 " WHERE number = '" + transferCardNumber + "';";
 
         try (Connection connection = getNewConnection()) {
@@ -218,18 +218,39 @@ public class CreateSqlDataBase {
         String deleteAccountCommand = "DELETE FROM card WHERE number = ?;";
         SQLiteDataSource dataSource = new SQLiteDataSource();
         dataSource.setUrl(url);
-        try (Connection connection = dataSource.getConnection()) {
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(deleteAccountCommand)) {
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteAccountCommand)) {
-
-                preparedStatement.setString(1, getTempUserCardNumber());
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            preparedStatement.setString(1, getTempUserCardNumber());
+            preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+
     }
+
+    public static int getBalance() {
+        String informationAboutBalance = "SELECT balance FROM card WHERE number = ?";
+        int balance = 0;
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl(url);
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(informationAboutBalance)) {
+                preparedStatement.setString(1, getTempUserCardNumber());
+                ResultSet resultSet = preparedStatement.executeQuery();
+                resultSet.next();
+                balance = resultSet.getInt(1);
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (SQLException a) {
+            a.printStackTrace();
+        }
+        return balance;
+    }
+
 }
+

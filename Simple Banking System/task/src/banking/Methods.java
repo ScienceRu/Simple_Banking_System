@@ -23,10 +23,6 @@ public class Methods {
 
     Scanner sc = new Scanner(System.in);
 
-    public int getBalance() {
-        return balance;
-    }
-
     public void setBalance(int balanceIncrease) {
         balance += balanceIncrease;
     }
@@ -81,7 +77,6 @@ public class Methods {
     }
 
     public static boolean checkLuhnAlgorithm(String transferCardNumber) {
-        transferCardNumber = CreateSqlDataBase.getTempUserCardNumber();
         boolean isValid = false;
 
         ArrayList<Double> arrayList = new ArrayList<>();
@@ -89,8 +84,8 @@ public class Methods {
         for (int i = 0, j = 1; j <= transferCardNumber.length(); i++, j++) {
             arrayList.add(Double.parseDouble(transferCardNumber.substring(i, j)));
         }
-        double numberIndex16 = arrayList.get(16);
-        arrayList.remove(16);
+        double numberIndex16 = arrayList.get(15);
+        arrayList.remove(15);
 
 
         for (int i = 0; i < arrayList.size(); i++) {
@@ -101,14 +96,14 @@ public class Methods {
                 }
             }
         }
-        arrayList.add(16, numberIndex16);
+        arrayList.add(15, numberIndex16);
 
         double sum = 0;
-        for (double i : arrayList) {
-            sum += i;
+        for (int i=0; i<arrayList.size();i++) {
+            sum += arrayList.get(i);
         }
 
-        if (sum % 10 != 0) {
+        if (sum % 10 == 0) {
             isValid = true;
         }
         return isValid;
@@ -208,7 +203,7 @@ public class Methods {
         int actionOfUser = sc.nextInt();
         switch (actionOfUser) {
             case 1://1. Balance
-                System.out.printf("Balance %d\r\n", getBalance());
+                System.out.printf("Balance %d\r\n", CreateSqlDataBase.getBalance());
                 actingWithAccount();
                 break;
             case 2://Add income
